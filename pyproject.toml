@@ -1,0 +1,82 @@
+[project]
+name = "hue-party"
+version = "0.1.0"
+description = "Music-reactive Philips Hue party controller with a mobile web UI"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "R", email = "arcodergh@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "aiohue==4.9.0",
+    "aubio-ledfx==0.4.11",
+    "fastapi>=0.141.1",
+    "hue-entertainment==0.1.2",
+    "numpy>=2.5.2",
+    "pydantic>=2.13.5",
+    "python-dotenv>=1.2.3",
+    "pyyaml>=6.0.3",
+    "sounddevice>=0.5.6",
+    "uvicorn[standard]>=0.52.4",
+    "ytmusicapi>=1.12.2",
+]
+
+[project.optional-dependencies]
+# The PyPI madmom (0.16.1, 2018) does not build on Python 3.12/numpy 2; git main does.
+neural = ["madmom @ git+https://github.com/CPJKU/madmom@27f032e8947204902c675e5e341a3faf5dc86dae"]
+
+[project.scripts]
+hue-party = "hue_party.main:main"
+
+[build-system]
+requires = ["uv_build>=0.12.7,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "mypy>=2.3.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.5",
+    "types-pyyaml>=6.0.12.20260815",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+# Test fixtures quote verbatim pactl output; splitting its lines would falsify them.
+"tests/test_speakers.py" = ["E501"]
+"tests/test_web.py" = ["E501"]
+
+[tool.mypy]
+strict = true
+mypy_path = "src"
+
+[[tool.mypy.overrides]]
+module = [
+    "aubio",
+    "sounddevice",
+    "hue_entertainment.*",
+    "hue_entertainment",
+    "aiohue.*",
+    "aiohue",
+    "madmom.*",
+    "madmom",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated:UserWarning",
+]

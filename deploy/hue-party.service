@@ -1,0 +1,23 @@
+[Unit]
+Description=hue-party music-reactive Hue light server
+# User-session services: PipeWire provides capture + AirPlay sinks, D-Bus provides MPRIS.
+After=pipewire.service pipewire-pulse.service
+Wants=pipewire.service pipewire-pulse.service
+
+[Service]
+Type=exec
+WorkingDirectory=%h/hue-sonos-party
+# Re-plumb the audio graph (idempotent); '-' prefix: a missing Sonos must not block startup.
+ExecStartPre=-%h/hue-sonos-party/scripts/setup-audio.sh
+ExecStart=%h/.local/bin/uv run hue-party run
+Restart=on-failure
+RestartSec=5
+# Light hardening. Note: no PrivateTmp — album art is read from Chrome's files in /tmp.
+NoNewPrivileges=yes
+# The app launches/controls Chrome on this box's desktop session. Match these to the
+# session's real values: `tr "\0" "\n" < /proc/$(pgrep -u $USER gnome-shell)/environ | grep -E "DISPLAY|XAUTH"`
+Environment=DISPLAY=:1
+Environment=XAUTHORITY=/run/user/1000/gdm/Xauthority
+
+[Install]
+WantedBy=default.target

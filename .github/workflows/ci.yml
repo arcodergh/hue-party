@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feat/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with: { enable-cache: true }
+      - run: uv python install 3.12
+      # libportaudio2: native lib sounddevice needs at import time (analyzer tests)
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libportaudio2
+      - run: uv sync
+      - run: uv run pytest -q
+
+  lint-typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with: { enable-cache: true }
+      - run: uv python install 3.12
+      - run: uv sync
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy src
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # LICENSING: the gitleaks CLI/binary is MIT and free; the
+      # gitleaks/gitleaks-action wrapper requires a PAID license for org
+      # repos. Always invoke the docker image directly, never the action.
+      - name: gitleaks
+        run: |
+          docker run --rm -v "$GITHUB_WORKSPACE:/repo" \
+            ghcr.io/gitleaks/gitleaks:latest \
+            dir /repo --redact --no-banner --exit-code 1
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with: { enable-cache: true }
+      - run: uv python install 3.12
+      - run: uv sync
+      # Audits the SYNCED environment against the PyPI advisory DB. Do NOT
+      # use `pip-audit -r requirements.txt` in uv projects — that mode spawns
+      # its own resolver venv and can crash. The local hue-party package is
+      # skipped automatically (not on PyPI).
+      - name: Audit Python deps
+        run: uv run --with pip-audit pip-audit

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hue Party</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+  <meta name="theme-color" content="#0c0c13">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <h1>
+    <span class="brand"><img src="/static/favicon.svg" alt=""> Hue Party</span>
+    <span id="crowd" title="crowd color"></span>
+    <button id="restart-btn" aria-label="Restart the party server">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
+    </button>
+  </h1>
+
+  <nav class="tabs" role="tablist">
+    <button id="tab-btn-music" role="tab" aria-controls="tab-music" aria-selected="true" class="active">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3z"/></svg>
+      Music
+    </button>
+    <button id="tab-btn-recent" role="tab" aria-controls="tab-recent" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4.2 14.2L11 13V7h1.5v5.3l4.5 2.7z"/></svg>
+      Recent
+    </button>
+    <button id="tab-btn-party" role="tab" aria-controls="tab-party" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 21c.6 0 1-.4 1-1v-7.6l9.8-4.4c.7-.3.7-1.3 0-1.6L10 2V1c0-.6-.4-1-1-1S8 .4 8 1v19c0 .6.4 1 1 1zM4 22h10a1 1 0 0 0 0-2H4a1 1 0 0 0 0 2z"/></svg>
+      Party
+    </button>
+  </nav>
+
+  <section id="tab-music" role="tabpanel">
+    <div class="card" id="nowplaying">
+      <img id="cover" class="empty" alt=""
+           src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBTAA7">
+      <div id="nowplaying-text">
+        <div id="track"></div>
+        <div class="transport" id="player">
+          <button data-player="previous" aria-label="Previous track">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14l-11-7z"/></svg>
+          </button>
+          <button data-player="play_pause" aria-label="Play or pause">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <button data-player="next" aria-label="Next track">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>
+          </button>
+          <button id="stop-party" aria-label="Stop the party">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <h2>Play something</h2>
+    <form id="music-form" class="music-form">
+      <input type="search" id="music-query" placeholder="Search YouTube Music, or paste a link"
+             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+             enterkeyhint="search">
+      <button type="submit" aria-label="Search or play">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.8l-.3-.3a6.5 6.5 0 1 0-.7.7l.3.3v.8l5 5 1.5-1.5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+      </button>
+    </form>
+    <div id="music-results"></div>
+
+    <h2 class="row-heading">Speakers <button id="speakers-rescan" class="h2-action">Rescan</button></h2>
+    <div class="card" id="speakers-card">
+      <div class="speaker master">
+        <div class="speaker-name">Master</div>
+        <input type="range" id="master-volume" min="0" max="100" step="5" value="50"
+               aria-label="Master volume for all speakers">
+      </div>
+      <div id="speakers">
+        <div class="speaker-empty">Looking for Sonos speakers…</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-recent" role="tabpanel" hidden>
+    <nav class="tabs subtabs" role="tablist">
+      <button id="recent-btn-tracks" role="tab" aria-controls="recent-tracks"
+              aria-selected="true" class="active">Tracks</button>
+      <button id="recent-btn-lists" role="tab" aria-controls="recent-lists"
+              aria-selected="false">Lists</button>
+      <button id="recent-btn-picks" role="tab" aria-controls="recent-picks"
+              aria-selected="false">Picks</button>
+    </nav>
+    <div id="recent-tracks" role="tabpanel"><div class="hint">Nothing played yet.</div></div>
+    <div id="recent-lists" role="tabpanel" hidden><div class="hint">No lists played yet.</div></div>
+    <div id="recent-picks" role="tabpanel" hidden><div class="hint">Loading picks…</div></div>
+  </section>
+
+  <section id="tab-party" role="tabpanel" hidden>
+    <h2>Mode</h2>
+    <div class="row" id="modes"></div>
+    <button id="calibrate">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 1 0 4 4 4 4 0 0 0-4-4zm9 3h-2.07A7 7 0 0 0 13 5.07V3h-2v2.07A7 7 0 0 0 5.07 11H3v2h2.07A7 7 0 0 0 11 18.93V21h2v-2.07A7 7 0 0 0 18.93 13H21zm-9 6a5 5 0 1 1 5-5 5 5 0 0 1-5 5z"/></svg>
+      Calibrate light delay
+    </button>
+
+    <h2>Palette</h2>
+    <div class="pill-row" id="palettes"></div>
+
+    <div id="engines-section" hidden>
+      <h2>Beat engine</h2>
+      <div class="pill-row" id="engines"></div>
+    </div>
+
+    <h2>Show</h2>
+    <label>Light delay (syncs with Sonos) <span class="val" id="offsetVal"></span></label>
+    <input type="range" id="offset" min="0" max="3000" step="50">
+    <label>Brightness cap <span class="val" id="brightnessVal"></span></label>
+    <input type="range" id="brightness" min="0" max="1" step="0.05">
+
+    <h2>Drop</h2>
+    <button id="drop">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 11-14h-8z"/></svg>
+      Drop!
+    </button>
+    <div class="drop-bar" id="drop-bar" hidden><div id="drop-bar-fill"></div></div>
+    <button id="panic">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 1 21h22zm0 6 6.5 11h-13zM11 10h2v5h-2zm0 6h2v2h-2z"/></svg>
+      Panic: lights on
+    </button>
+
+    <h2>Guests</h2>
+    <div class="guests">
+      <div id="qr"></div>
+      <div id="guestUrl"></div>
+    </div>
+  </section>
+
+  <div id="status"></div>
+
+  <div id="restart-confirm" class="overlay" hidden>
+    <div class="dialog">
+      <h3>Restart the server?</h3>
+      <p>Music and lights stop for about half a minute while the party server reboots.</p>
+      <div class="dialog-actions">
+        <button id="restart-cancel">Cancel</button>
+        <button id="restart-confirm-btn" class="dialog-danger">Restart</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="stop-confirm" class="overlay" hidden>
+    <div class="dialog">
+      <h3>Stop the party?</h3>
+      <p>Music stops, the light show ends, and the room lights come back on.</p>
+      <div class="dialog-actions">
+        <button id="stop-cancel">Keep playing</button>
+        <button id="stop-confirm-btn">Stop the party</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/qrcode.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

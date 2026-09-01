@@ -1,0 +1,28 @@
+hue:
+  bridge_host: "192.168.1.2"     # <-- set your bridge IP (Hue app: Settings -> My hue system -> bridge)
+  entertainment_area: ""          # empty = first area on the bridge
+  white_light_ids: []             # aiohue v2 light resource ids for the white bulbs
+  white_min_interval_s: 0.5
+  watchdog_poll_s: 5.0          # how often to check the bridge still honors our stream
+  music_stop_grace_s: 15.0      # music silent this long -> stop the light stream
+  blackout_others: true         # party on: other bridge lights off (restored after)
+audio:
+  device: "music_bus.monitor"
+  sample_rate: 44100
+  fps: 60
+  fft_size: 4096
+  beat_engine: "neural"        # classic | predictive | neural (needs --extra neural)
+show:
+  default_mode: "beat_flash"
+  default_palette: "fiesta"
+  default_offset_ms: 1200
+  brightness_cap: 1.0
+  strobe_max_hz: 8.0
+  drop_duration_s: 5.0        # strobe length of the Drop button
+music:
+  browser: "google-chrome"   # command used to launch the app-managed party browser
+  debug_port: 9222           # Chrome DevTools port (localhost only)
+  profile_dir: "~/.config/hue-party/chrome-profile"  # dedicated profile; log into YT Music once
+web:
+  host: "0.0.0.0"
+  port: 8000
